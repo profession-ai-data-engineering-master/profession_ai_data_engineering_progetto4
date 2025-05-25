@@ -101,12 +101,12 @@ db['contatti'].aggregate([
 Filtro per esistenza del campo profilo social e poi proietto nome e cognome.
 
 ```python
-list(contatti.find({"Altri_contatti.Profilo_social": {"$exists": True}}, {"_id": 0, "Nome": 1, "Cognome": 1}))
+list(contatti.find({"Altri_contatti.Profilo_social": {"$exists": False}}, {"_id": 0, "Nome": 1, "Cognome": 1}))
 ```
 
 ```shell
 db['contatti'].find(
-    { "Altri_contatti.Profilo_social": { $exists: true } },
+    { "Altri_contatti.Profilo_social": { $exists: false } },
     { _id: 0, Nome: 1, Cognome: 1 }
 )
 ```
@@ -120,7 +120,7 @@ list(contatti.aggregate([
     { "$project": { "Amici_stretti": 1 } },
     { "$group": {
             "_id": "$Amici_stretti",
-            "conteggio": { "$count": { } }
+            "Conteggio": { "$sum": 1 }
             }
         },
     { "$sort": { "_id": -1 } }
@@ -132,10 +132,37 @@ db['contatti'].aggregate([
     { $project: { Amici_stretti: 1 } },
     { $group: {
             _id: "$Amici_stretti",
-            conteggio: { $count: {} }
+            Conteggio: { $sum: 1 }
         }
     },
     { $sort: { _id: -1 } }
+])
+```
+
+### Calcolare il numero medio di chiamate effettuate nell’ultimo mese dai contatti “amici stretti”.
+
+Uso sempre la funzione aggregate. Nella trasformazione filtro prima i contatti con amici stretti a True
+e successivamente ne calcolo la media.
+
+```python
+list(contatti.aggregate([
+    {"$match":{"Amici_stretti": True}},
+    {"$group":{
+        "_id":1,
+        "Media_chiamate_amici_stretti": { "$avg": "$Chiamate_ultimo_mese" }
+            }
+        },
+    ]))
+```
+
+```shell
+db['contatti'].aggregate([
+    { $match : { Amici_stretti: true} },
+    { $group: {
+            _id: 1,
+            Media_chiamate_amici_stretti: { $avg: "$Chiamate_ultimo_mese" }
+        }
+    },
 ])
 ```
 
