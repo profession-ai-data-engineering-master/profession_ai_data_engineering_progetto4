@@ -5,7 +5,7 @@ and the 2 updates of the assignment against a standalone MongoDB (default:
 the one started by ``docker compose up``).
 
 Usage:
-    python solution.py
+    python -m contacts
 
 The connection URI can be overridden via the ``MONGO_URI`` env var
 (default ``mongodb://localhost:27017``).
@@ -13,8 +13,7 @@ The connection URI can be overridden via the ``MONGO_URI`` env var
 
 from pprint import pprint
 
-import db
-import queries
+from contacts import db, queries
 
 
 def header(title: str) -> None:

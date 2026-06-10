@@ -5,7 +5,7 @@ by issue #5."""
 import pytest
 from pymongo.errors import DuplicateKeyError
 
-import queries
+from contacts import queries
 
 
 def names(docs: list[dict]) -> set[tuple[str, str]]:

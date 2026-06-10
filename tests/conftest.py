@@ -10,7 +10,7 @@ import pytest
 from pymongo.collection import Collection
 from pymongo.errors import ServerSelectionTimeoutError
 
-import db
+from contacts import db
 
 TEST_DB = "contatti_test"
 

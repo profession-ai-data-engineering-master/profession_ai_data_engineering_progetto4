@@ -1,7 +1,9 @@
 """MongoDB connection and seeding helpers for the contacts project.
 
-Flat module by design: the domain (one collection, 11 documents) does not
-justify a repository pattern.
+Single flat package: the domain (one collection, 11 documents) does not
+justify a repository pattern; packaging the modules under ``contacts``
+keeps generic top-level names like ``db`` and ``queries`` out of the
+installed environment.
 """
 
 import json
@@ -15,7 +17,9 @@ from pymongo.database import Database
 DEFAULT_URI = "mongodb://localhost:27017"
 DB_NAME = "contatti"
 COLLECTION_NAME = "contatti"
-DATASET_PATH = Path(__file__).parent / "data" / "contatti.json"
+# Repo-checkout layout: the dataset lives at the repo root because it is
+# shared with the docker seed (docker-compose mounts ./data/contatti.json).
+DATASET_PATH = Path(__file__).resolve().parents[1] / "data" / "contatti.json"
 
 
 def get_client(uri: str | None = None, **kwargs: object) -> MongoClient:
