@@ -35,9 +35,7 @@ def get_collection(db: Database, name: str = COLLECTION_NAME) -> Collection:
     return db[name]
 
 
-def seed_collection(
-    collection: Collection, dataset_path: Path = DATASET_PATH
-) -> int:
+def seed_collection(collection: Collection, dataset_path: Path = DATASET_PATH) -> int:
     """Reset `collection` to the dataset state and return the document count.
 
     Drops the collection, creates the unique {Nome, Cognome} index (an
