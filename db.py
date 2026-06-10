@@ -18,9 +18,13 @@ COLLECTION_NAME = "contatti"
 DATASET_PATH = Path(__file__).parent / "data" / "contatti.json"
 
 
-def get_client(uri: str | None = None) -> MongoClient:
-    """Return a client for `uri`, the MONGO_URI env var, or the local default."""
-    return MongoClient(uri or os.environ.get("MONGO_URI", DEFAULT_URI))
+def get_client(uri: str | None = None, **kwargs: object) -> MongoClient:
+    """Return a client for `uri`, the MONGO_URI env var, or the local default.
+
+    Extra keyword arguments are forwarded to MongoClient (e.g. the tests
+    pass a short serverSelectionTimeoutMS to fail fast when Mongo is down).
+    """
+    return MongoClient(uri or os.environ.get("MONGO_URI", DEFAULT_URI), **kwargs)
 
 
 def get_db(client: MongoClient, name: str = DB_NAME) -> Database:
