@@ -14,8 +14,7 @@ dev = [
 ]
 
 [tool.setuptools]
-# Flat modules at repo root, no package directory by design.
-py-modules = ["db", "queries", "solution"]
+packages = ["contacts"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

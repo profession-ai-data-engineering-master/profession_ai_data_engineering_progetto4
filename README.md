@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/profession-ai-data-engineering-master/profession_ai_data_engineering_progetto4/actions/workflows/ci.yml/badge.svg)](https://github.com/profession-ai-data-engineering-master/profession_ai_data_engineering_progetto4/actions/workflows/ci.yml)
 
-Rubrica di contatti document-oriented su **MongoDB**: 6 query e 2 update su un dataset volutamente eterogeneo (campi opzionali, telefoni string|array), con ambiente Docker riproducibile, modulo dati tipizzato, test con oracoli espliciti e CI.
+Rubrica di contatti document-oriented su **MongoDB**: 6 query e 2 update su un dataset volutamente eterogeneo (campi opzionali, telefoni string|array), con ambiente Docker riproducibile, package dati tipizzato, test con oracoli espliciti e CI.
 
 Progetto 4 del [Master in Data Engineering di ProfessionAI](https://github.com/profession-ai-data-engineering-master).
 
@@ -20,7 +20,7 @@ Poi, per eseguire soluzione e test:
 
 ```shell
 pip install -e ".[dev]"
-python solution.py   # le 6 query + 2 update, risultati a video
+python -m contacts   # le 6 query + 2 update, risultati a video
 pytest               # 13 test su un DB dedicato contatti_test
 ```
 
@@ -33,22 +33,23 @@ docker compose
 ├── mongo   (mongo:7 standalone, healthcheck)   ←  MONGO_URI
 └── seed    (one-shot: drop → indice univoco → import dataset)
                                                      │
-db.py        connessione + seed_collection() ────────┘
-queries.py   le 6 query + 2 update come funzioni tipizzate
-solution.py  runner: esegue tutto e stampa i risultati
+contacts/    il package Python (entrypoint: python -m contacts)
+├ db.py        connessione + seed_collection() ──────┘
+├ queries.py   le 6 query + 2 update come funzioni tipizzate
+└ solution.py  runner: esegue tutto e stampa i risultati
 tests/       fixture su DB contatti_test (riseminato a ogni test)
 .github/     CI: ruff check + format + pytest su service container mongo:7
 ```
 
-- **[`db.py`](db.py)** — connessione (`MONGO_URI` da env) e `seed_collection()`: stessa semantica del seed Docker, riusata dalle fixture dei test.
-- **[`queries.py`](queries.py)** — le query della consegna come funzioni che ricevono la collection esplicitamente; la gestione del campo telefono string|array vive in un'unica normalizzazione `$isArray`/`$cond` condivisa da query e append.
-- **[`solution.py`](solution.py)** — runner sottile del modulo: nessuna logica MongoDB fuori da `db.py`/`queries.py`.
+- **[`contacts/db.py`](contacts/db.py)** — connessione (`MONGO_URI` da env) e `seed_collection()`: stessa semantica del seed Docker, riusata dalle fixture dei test.
+- **[`contacts/queries.py`](contacts/queries.py)** — le query della consegna come funzioni che ricevono la collection esplicitamente; la gestione del campo telefono string|array vive in un'unica normalizzazione `$isArray`/`$cond` condivisa da query e append.
+- **[`contacts/solution.py`](contacts/solution.py)** — runner sottile del package: nessuna logica MongoDB fuori da `db.py`/`queries.py`. [`__main__.py`](contacts/__main__.py) lo espone come `python -m contacts`.
 - **[`tests/`](tests)** — 13 test con oracoli calcolati dal dataset e 3 regressioni mirate (append piatto, `$exists` annidato, `DuplicateKeyError` sul duplicato); ogni test risemina e droppa il proprio DB `contatti_test`, indipendente dal seed Docker.
 - **[`.github/workflows/ci.yml`](.github/workflows/ci.yml)** — lint (`ruff check`, `ruff format --check`) e test su ogni push/PR, con MongoDB come service container.
 
 ## Esempi di output
 
-Estratti di `python solution.py`:
+Estratti di `python -m contacts`:
 
 ```text
 === Contatti con più di un numero di telefono ===
@@ -91,9 +92,11 @@ Il dataset è volutamente piccolo (11 documenti): il valore qui non è applicare
 ├── docker-compose.yml      # mongo:7 + servizio seed (healthcheck, depends_on)
 ├── docker/seed.sh          # drop → indice univoco → mongoimport
 ├── data/contatti.json      # il dataset (11 contatti), versionato
-├── db.py                   # connessione + seed_collection()
-├── queries.py              # 6 query + 2 update, funzioni tipizzate
-├── solution.py             # runner della soluzione
+├── contacts/               # il package Python
+│   ├── db.py               #   connessione + seed_collection()
+│   ├── queries.py          #   6 query + 2 update, funzioni tipizzate
+│   ├── solution.py         #   runner della soluzione
+│   └── __main__.py         #   entrypoint: python -m contacts
 ├── tests/                  # conftest (fixture contatti_test) + test_queries
 ├── pyproject.toml          # dipendenze pinnate, config ruff e pytest
 └── .github/workflows/ci.yml
