@@ -1,0 +1,25 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: progetto4-mongo
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  seed:
+    image: mongo:7
+    container_name: progetto4-seed
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      MONGO_HOST: mongo
+    volumes:
+      - ./data/contatti.json:/seed/contatti.json:ro
+      - ./docker/seed.sh:/seed/seed.sh:ro
+    entrypoint: ["bash", "/seed/seed.sh"]
