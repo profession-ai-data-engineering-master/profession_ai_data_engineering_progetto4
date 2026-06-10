@@ -69,3 +69,25 @@ La soluzione di **DigitalConnect** consente alle aziende di avere un controllo t
 ## Dataset
 
 Il dataset è scaricabile da qui: [https://proai-datasets.s3.eu-west-3.amazonaws.com/contatti.json](https://proai-datasets.s3.eu-west-3.amazonaws.com/contatti.json)
+
+Una copia è versionata in [`data/contatti.json`](data/contatti.json): l'ambiente locale funziona anche offline.
+
+## Ambiente locale (Docker)
+
+Prerequisito: Docker (Desktop su Windows/macOS).
+
+```shell
+docker compose up -d
+```
+
+Avvia un **MongoDB 7 standalone** su `localhost:27017` e, quando il database è pronto (healthcheck), un servizio one-shot di **seed** che:
+
+1. azzera la collection `contatti` del database `contatti`;
+2. crea l'indice univoco `{ Nome: 1, Cognome: 1 }` (vincolo di integrità anti-duplicati);
+3. importa gli 11 contatti di `data/contatti.json`.
+
+Il seed gira a ogni `up`: lo stato riparte sempre dal dataset originale (comodo per rieseguire gli esercizi da zero). Per spegnere:
+
+```shell
+docker compose down
+```
