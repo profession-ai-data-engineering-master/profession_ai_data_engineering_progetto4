@@ -1,0 +1,17 @@
+[project]
+name = "progetto4-contatti"
+version = "1.0.0"
+description = "Rubrica di contatti su MongoDB — progetto 4 del Master in Data Engineering (ProfessionAI)"
+requires-python = ">=3.11"
+dependencies = [
+    "pymongo==4.17.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.0.3",
+]
+
+[tool.setuptools]
+# Flat modules at repo root, no package directory by design.
+py-modules = ["db", "queries", "solution"]
