@@ -91,3 +91,18 @@ Il seed gira a ogni `up`: lo stato riparte sempre dal dataset originale (comodo 
 ```shell
 docker compose down
 ```
+
+## Soluzione
+
+La soluzione è lo script [`solution.py`](solution.py), runner del modulo dati ([`db.py`](db.py) + [`queries.py`](queries.py)): esegue le 6 query e i 2 update della consegna contro il MongoDB locale e ne stampa i risultati.
+
+### Scelte di modellazione
+
+Il dataset è volutamente piccolo (11 documenti): il valore qui non è applicare tecniche di scala, ma dichiarare i compromessi di modellazione — incluso **quando una tecnica non serve**.
+
+- **Chiave naturale `{Nome, Cognome}`** — è la chiave usata da indice univoco e upsert, e non è robusta: due omonimi sono un falso duplicato. In produzione si userebbe un id surrogato o il telefono normalizzato come chiave candidata; qui resta come vincolo dimostrativo, dichiaratamente imperfetto.
+- **Indice univoco come vincolo, non come ottimizzazione** — su 11 documenti un indice non cambia nulla in termini di performance; `{Nome: 1, Cognome: 1}` esiste solo come **vincolo di integrità** (anti-duplicati, abilita l'upsert di Mary Salgado). Con dati reali si indicizzerebbero i campi di ricerca effettivi (`Società`, `Tag`).
+- **`Numero_di_cellulare` string|array** — il dataset è eterogeneo: a volte stringa singola, a volte lista. La normalizzazione ad array avviene in un solo punto (il pattern `$isArray`/`$cond` condiviso tra query e append in `queries.py`), così non esistono modi diversi di gestire lo stesso caso. Un'alternativa più strutturale sarebbe un validatore `$jsonSchema` sulla collection, qui non implementato per non aggiungere cerimonia a un dataset dimostrativo.
+- **`Amici_stretti` e i valori mancanti** — il conteggio raggruppa per valore senza assumere `False` per un eventuale campo assente: un documento senza il campo finirebbe in un gruppo `None`, lasciando **visibile l'assenza di informazione** invece di mascherarla con un default. In questo dataset il campo è sempre presente, quindi è una scelta di principio, non un comportamento osservato.
+- **"Senza social" e `$exists: false` su path annidato** — il filtro `Altri_contatti.Profilo_social: {$exists: false}` intercetta sia chi ha `Altri_contatti` senza `Profilo_social`, sia chi non ha proprio il sottodocumento: entrambi i casi sono "senza social" per la consegna.
+- **Embedding vs referencing** — `Altri_contatti` è embedded perché viene sempre letto insieme al contatto (località dei dati, nessun accesso indipendente). Il referencing avrebbe senso con entità condivise tra documenti (es. un'anagrafica società), che qui non esistono.
